@@ -15,7 +15,7 @@ function New-MarkBrush {
 # 局部坐标: (0,0) = 宠物中心; 齿从半径 26 长到 94, 所以转起来是绕中心
 $script:PetalData = 'M 0,-30 C -8,-36 -12,-44 -12,-50 C -12,-56 -7,-60 0,-60 C 7,-60 12,-56 12,-50 C 12,-44 8,-36 0,-30 Z'
 function Initialize-Blossom {
-    for ($i = 0; $i -lt 8; $i++) {
+    for ($i = 0; $i -lt 0; $i++) {
         $p = New-Object System.Windows.Shapes.Path
         $p.Data = [System.Windows.Media.Geometry]::Parse($script:PetalData)
         $p.Fill = New-MarkBrush

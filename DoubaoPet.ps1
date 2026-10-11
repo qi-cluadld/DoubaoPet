@@ -146,7 +146,33 @@ $script:CrestX = 120.0
 $script:CrestY = 72.0
 $script:CenterY = 122.0
 # 核心:六边形(尖朝上),圆角较大,像一个软软的坐垫
-$script:BodyData = New-RoundPolyData -R 56 -N 12 -Round 0.55 -Phase ([Math]::PI / 2)
+# 豆包 = 一颗豆: 圆角矩形拉长一点(152x120)、圆角很大、整体斜 8 度
+function New-BeanData {
+    param([double]$CX = 120, [double]$CY = 122, [double]$W = 152, [double]$H = 120, [double]$R = 56, [double]$Rot = -8)
+    $hw = $W / 2; $hh = $H / 2
+    $pts = @(
+        @((- $hw + $R), (- $hh)), @(($hw - $R), (- $hh)), @($hw, (- $hh + $R)), @($hw, ($hh - $R)),
+        @(($hw - $R), $hh), @((- $hw + $R), $hh), @((- $hw), ($hh - $R)), @((- $hw), (- $hh + $R))
+    )
+    $rad = $Rot * [Math]::PI / 180.0
+    $co = [Math]::Cos($rad); $si = [Math]::Sin($rad)
+    $abs = @()
+    foreach ($p in $pts) {
+        $x = $p[0] * $co - $p[1] * $si
+        $y = $p[0] * $si + $p[1] * $co
+        $abs += , @(($CX + $x), ($CY + $y))
+    }
+    $sb = New-Object System.Text.StringBuilder
+    [void]$sb.Append(('M {0:0.##},{1:0.##} L {2:0.##},{3:0.##} ' -f $abs[0][0], $abs[0][1], $abs[1][0], $abs[1][1]))
+    foreach ($k in 2, 4, 6) {
+        [void]$sb.Append(('A {0:0.##},{0:0.##} 0 0 1 {1:0.##},{2:0.##} ' -f $R, $abs[$k][0], $abs[$k][1]))
+        $nx = $k + 1
+        [void]$sb.Append(('L {0:0.##},{1:0.##} ' -f $abs[$nx][0], $abs[$nx][1]))
+    }
+    [void]$sb.Append(('A {0:0.##},{0:0.##} 0 0 1 {1:0.##},{2:0.##} Z' -f $R, $abs[0][0], $abs[0][1]))
+    return $sb.ToString()
+}
+$script:BodyData = New-BeanData
 # 星芒(6 片):圆角长条,围着核心转一圈
 $script:ArmLen = 58.0
 $script:ArmThick = 17.0
@@ -379,7 +405,7 @@ function New-MarkBrush {
 # 局部坐标: (0,0) = 宠物中心; 齿从半径 26 长到 94, 所以转起来是绕中心
 $script:PetalData = 'M 0,-30 C -8,-36 -12,-44 -12,-50 C -12,-56 -7,-60 0,-60 C 7,-60 12,-56 12,-50 C 12,-44 8,-36 0,-30 Z'
 function Initialize-Blossom {
-    for ($i = 0; $i -lt 8; $i++) {
+    for ($i = 0; $i -lt 0; $i++) {
         $p = New-Object System.Windows.Shapes.Path
         $p.Data = [System.Windows.Media.Geometry]::Parse($script:PetalData)
         $p.Fill = New-MarkBrush
